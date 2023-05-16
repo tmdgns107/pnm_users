@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/tmdgns107/pnm_users#readme",
   "dependencies": {
-    "aws-sdk": "^2.1378.0"
+    "aws-sdk": "^2.1378.0",
+    "mysql2": "^3.3.1"
   },
   "type": "module"
 }
