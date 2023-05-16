@@ -27,4 +27,4 @@ jobs:
       - name: deploy
         run: |
           zip -j deploy.zip ./*
-          aws lambda update-function-code --function-name=petNmattUsers --zip-file=fileb://deploy.zip
+          aws lambda update-function-code --function-name=test --zip-file=fileb://deploy.zip
