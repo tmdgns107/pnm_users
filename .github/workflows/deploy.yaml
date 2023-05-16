@@ -19,7 +19,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Deploy to AWS Lambda
-        uses: tmdgns107/pnm_users@main
+        uses: /pnm_users@main
         with:
           function-name: petNmattUsers
           zip-file: index.js
