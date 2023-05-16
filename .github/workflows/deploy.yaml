@@ -1,28 +1,30 @@
-name: Deploy to AWS Lambda
+name: Deploy
 
 on:
   push:
     branches:
-      - main
+    - master
 
 jobs:
-  deploy:
-    name: Deploy
+  deploy_lambda:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: '18'
-      - name: Install Dependencies
-        run: npm install
-      - name: Deploy to AWS Lambda
-        uses: /pnm_users@main
+          node-version: '14'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          function-name: petNmattUsers
-          zip-file: index.js
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: npm install
+        env:
+          CI: true
+        run: |
+          npm ci
+      - name: deploy
+        run: |
+          zip -j deploy.zip ./*
+          aws lambda update-function-code --function-name=petNmattUsers --zip-file=fileb://deploy.zip
