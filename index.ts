@@ -14,7 +14,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
         userInfo: {}
     };
 
-    let tableName = 'users_test';
+    let tableName :string = 'users_test';
     if (!event.body) {
         console.log("Not exist body");
         response.statusCode = 400;
@@ -39,8 +39,8 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
         connection.connect();
 
-        const query = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
-        const values = [requestBody.id];
+        const query :string = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
+        const values :any[] = [requestBody.id];
 
         const results = await new Promise<any>((resolve, reject) => {
             connection.query(query, values, (error, results) => {
@@ -54,7 +54,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
         });
 
         console.log("results", results);
-        const count = results[0]?.count || 0;
+        const count :number = results[0]?.count || 0;
 
         if (count >= 1) {
             response.statusCode = 200;
@@ -66,7 +66,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             const values: string = Object.values(requestBody).map((value) => `'${value}'`).join(', ');
             const currentTime :string = new Date().toISOString();
 
-            const insertQuery = `INSERT INTO ${tableName} (${columns}, createTime, updateTime) VALUES (${values}, '${currentTime}', '${currentTime}')`;
+            const insertQuery :string = `INSERT INTO ${tableName} (${columns}, createTime, updateTime) VALUES (${values}, '${currentTime}', '${currentTime}')`;
             console.log("insertQuery", insertQuery);
             await new Promise<void>((resolve, reject) => {
                 connection.query(insertQuery, values, (error) => {
