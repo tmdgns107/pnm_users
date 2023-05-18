@@ -1,9 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
 import mysql from 'mysql';
+import * as database from "./config/database.json";
 
-const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
-const user = "admin";
-const password = "wnakf0510#";
+// const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
+// const user = "admin";
+// const password = "wnakf0510#";
 
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
     console.log("Event", event);
@@ -38,11 +39,11 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     let connection;
     try {
         connection = mysql.createConnection({
-            host: host,
-            user: user,
-            password: password,
-            port: 3306,
-            database: "mydb"
+            host: database.host,
+            user: database.user,
+            password: database.password,
+            port: database.port,
+            database: database.database
         });
 
         connection.connect();

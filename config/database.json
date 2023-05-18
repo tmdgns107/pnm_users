@@ -1,0 +1,7 @@
+{
+  "host": "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com",
+  "user": "admin",
+  "password": "wnakf0510#",
+  "port": 3306,
+  "database": "mydb"
+}
