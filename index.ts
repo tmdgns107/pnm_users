@@ -2,10 +2,6 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lamb
 import mysql from 'mysql';
 import * as database from "./config/database.json";
 
-// const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
-// const user = "admin";
-// const password = "wnakf0510#";
-
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
     console.log("Event", event);
 
@@ -16,9 +12,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     let responseBody = {
         message: '',
         userInfo: {}
-    }
-
-    console.log("event", event);
+    };
 
     let tableName = 'users_test';
     if (!event.body) {
@@ -48,11 +42,11 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
         connection.connect();
 
-        const query = `SELECT COUNT(*) FROM ${tableName} WHERE id = ?`;
-        const values = [requestBody.id];
+        const selectQuery = `SELECT COUNT(*) as count FROM ${tableName} WHERE id = ?`;
+        const selectValues = [requestBody.id];
 
-        const results = await new Promise<any[]>((resolve, reject) => {
-            connection.query(query, values, (error, results, fields) => {
+        const selectResults = await new Promise<any[]>((resolve, reject) => {
+            connection.query(selectQuery, selectValues, (error, results) => {
                 if (error) {
                     console.log("Error in db query", error);
                     reject(error);
@@ -62,12 +56,51 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             });
         });
 
-        console.log("results", results);
-        response.statusCode = 200;
-        responseBody.message = 'success';
-        responseBody.userInfo = results;
-        response.body = JSON.stringify(responseBody);
-        return response;
+        console.log("selectResults", selectResults);
+
+        if (selectResults[0].count > 0) {
+            const selectUserQuery = `SELECT * FROM ${tableName} WHERE id = ?`;
+            const selectUserValues = [requestBody.id];
+
+            const selectUserResults = await new Promise<any[]>((resolve, reject) => {
+                connection.query(selectUserQuery, selectUserValues, (error, results) => {
+                    if (error) {
+                        console.log("Error in db query", error);
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                });
+            });
+
+            console.log("selectUserResults", selectUserResults);
+            response.statusCode = 200;
+            responseBody.message = 'success';
+            responseBody.userInfo = selectUserResults;
+            response.body = JSON.stringify(responseBody);
+            return response;
+        } else {
+            const updateTime = new Date().toISOString();
+            const insertQuery = `INSERT INTO ${tableName} (id, updateTime) VALUES (?, ?)`;
+            const insertValues = [requestBody.id, updateTime];
+
+            await new Promise<void>((resolve, reject) => {
+                connection.query(insertQuery, insertValues, (error) => {
+                    if (error) {
+                        console.log("Error in db query", error);
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            response.statusCode = 200;
+            responseBody.message = 'success';
+            responseBody.userInfo = { id: requestBody.id, updateTime: updateTime };
+            response.body = JSON.stringify(responseBody);
+            return response;
+        }
     } catch (e) {
         console.log("Error in db connection", e);
         response.statusCode = 400;
