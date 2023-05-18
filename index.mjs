@@ -1,5 +1,6 @@
 // import AWS from 'aws-sdk';
 // import * as dbConfig from './config/database.json' assert { type: 'json' };
+import uniqid from 'uniqid';
 import mysql from 'mysql2';
 
 const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
@@ -9,6 +10,8 @@ const password = "wnakf0510#";
 // Lambda handler function
 export const handler = async (event) => {
     console.log("event", event);
+
+    console.log("uuid", uniqid())
 
     let tableName = 'users_test';
     if(!event.body){
