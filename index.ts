@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
-import * as mysql from 'mysql';
+import mysql from 'mysql';
 
 const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
 const user = "admin";
@@ -8,24 +8,24 @@ const password = "wnakf0510#";
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
     console.log("Event", event);
 
-    interface Response {
-        statusCode: number;
-        message: string;
-    }
-
-    function sendResponse(statusCode: number, message: string): Response {
-        return {
-            statusCode: statusCode,
-            message: message,
-        };
+    let response = {
+        statusCode: 200,
+        body: ''
+    };
+    let responseBody = {
+        message: '',
+        userInfo: {}
     }
 
     console.log("event", event);
 
     let tableName = 'users_test';
-    if(!event.body){
+    if (!event.body) {
         console.log("Not exist body");
-        return sendResponse(400, 'body is required.');
+        response.statusCode = 400;
+        responseBody.message = 'body is required.';
+        response.body = JSON.stringify(responseBody);
+        return response;
     };
 
     const { body, headers, queryStringParameters } = event;
@@ -35,29 +35,48 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
     const requestBody = JSON.parse(body);
 
-    let connection, dbConnection;
-    try{
-        connection = await mysql.createConnection({
-            host     : host,
-            user     : user,
-            password : password,
-            port     : 3306
+    let connection;
+    try {
+        connection = mysql.createConnection({
+            host: host,
+            user: user,
+            password: password,
+            port: 3306,
+            database: "mydb"
         });
 
-        dbConnection = await connection.connect();
-    }catch (e) {
+        connection.connect();
+
+        const query = `SELECT COUNT(*) FROM ${tableName} WHERE id = ?`;
+        const values = [requestBody.id];
+
+        const results = await new Promise<any[]>((resolve, reject) => {
+            connection.query(query, values, (error, results, fields) => {
+                if (error) {
+                    console.log("Error in db query", error);
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+
+        console.log("results", results);
+        response.statusCode = 200;
+        responseBody.message = 'success';
+        responseBody.userInfo = results;
+        response.body = JSON.stringify(responseBody);
+        return response;
+    } catch (e) {
         console.log("Error in db connection", e);
-        return sendResponse(400, 'connection error');
+        response.statusCode = 400;
+        responseBody.message = 'error in query';
+        responseBody.userInfo = {};
+        response.body = JSON.stringify(responseBody);
+        return response;
+    } finally {
+        if (connection) {
+            connection.end();
+        }
     }
-
-    let rows, fields;
-    try{
-        [rows, fields] = await dbConnection.query(`SELECT COUNT(*) FROM ${tableName} WHERE id = ${requestBody.id}`);
-        console.log("rows, fields", rows, fields)
-    }catch (e) {
-        console.log("Error in db query", e);
-        return sendResponse(400, 'query error');
-    };
-
-    return sendResponse(200, 'success');
 };
