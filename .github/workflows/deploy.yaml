@@ -24,6 +24,7 @@ jobs:
           CI: true
         run: |
           npm ci
+      -
       - name: deploy
         run: |
           zip -j deploy.zip ./*

@@ -1,8 +1,13 @@
 // import AWS from 'aws-sdk';
-import * as dbConfig from './config/database.json' assert { type: 'json' };
+// import * as dbConfig from './config/database.json' assert { type: 'json' };
 import mysql from 'mysql2';
 
-export default async (event) => {
+const host = "db-petnmatt.cs0nb5zlvm5n.ap-northeast-2.rds.amazonaws.com";
+const user = "admin";
+const password = "wnakf0510#";
+
+// Lambda handler function
+export const handler = async (event) => {
     console.log("event", event);
 
     let tableName = 'users_test';
@@ -19,17 +24,17 @@ export default async (event) => {
     let connection, dbConnection;
     try{
         connection = await mysql.createConnection({
-            host     : dbConfig.host,
-            user     : dbConfig.user,
-            password : dbConfig.password,
-            port     : dbConfig.port
+            host     : host,
+            user     : user,
+            password : password,
+            port     : 3306
         });
 
         dbConnection = await connection.connect();
     }catch (e) {
         console.log("Error in db connection", e);
         return sendResponse(400, {message: 'An error occurred while connecting to the DB.'});
-    };
+    }
 
     let rows, fields;
     try{
@@ -38,6 +43,8 @@ export default async (event) => {
     }catch (e) {
         console.log("Error in db query", e);
     }
+
+    return sendResponse(200, {message: 'success'});
 
     function sendResponse(statusCode, responseBody) {
         console.log("responseBody", responseBody);
