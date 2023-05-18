@@ -62,9 +62,9 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             responseBody.userInfo = results[0];
             response.body = JSON.stringify(responseBody);
         } else {
-            const columns = Object.keys(requestBody).join(', ');
-            const values = Object.values(requestBody).map((value) => `'${value}'`).join(', ');
-            const updateTime = new Date().toISOString();
+            const columns: string = Object.keys(requestBody).join(', ');
+            const values: string = Object.values(requestBody).map((value) => `'${value}'`).join(', ');
+            const updateTime :string = String(new Date().toISOString());
 
             const insertQuery = `INSERT INTO ${tableName} (${columns}, updateTime) VALUES (${values}, ${updateTime})`;
             console.log("insertQuery", insertQuery);
