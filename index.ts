@@ -81,7 +81,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
             response.statusCode = 200;
             responseBody.message = 'success';
-            responseBody.userInfo = {...{updateTime: updateTime}, ...requestBody};
+            responseBody.userInfo = {...{updateTime: currentTime, createTime: currentTime}, ...requestBody};
             response.body = JSON.stringify(responseBody);
         }
 
