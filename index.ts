@@ -5,7 +5,7 @@ import * as database from "./config/database.json";
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
     console.log("Event", event);
 
-    let response = {
+    let response: APIGatewayProxyResultV2 = {
         statusCode: 200,
         body: ''
     };
@@ -21,14 +21,11 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
         responseBody.message = 'body is required.';
         response.body = JSON.stringify(responseBody);
         return response;
-    };
+    }
 
     const { body, headers, queryStringParameters } = event;
-    console.log("headers", headers);
-    console.log("queryStringParameters", queryStringParameters);
-    console.log("body", body);
-
     const requestBody = JSON.parse(body);
+    console.log("requestBody", requestBody);
 
     let connection;
     try {
@@ -42,11 +39,11 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
         connection.connect();
 
-        const selectQuery = `SELECT COUNT(*) as count FROM ${tableName} WHERE id = ?`;
-        const selectValues = [requestBody.id];
+        const query = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
+        const values = [requestBody.id];
 
-        const selectResults = await new Promise<any[]>((resolve, reject) => {
-            connection.query(selectQuery, selectValues, (error, results) => {
+        const results = await new Promise<any>((resolve, reject) => {
+            connection.query(query, values, (error, results) => {
                 if (error) {
                     console.log("Error in db query", error);
                     reject(error);
@@ -56,38 +53,25 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             });
         });
 
-        console.log("selectResults", selectResults);
+        console.log("results", results);
+        const count = results[0]?.count || 0;
 
-        if (selectResults[0].count > 0) {
-            const selectUserQuery = `SELECT * FROM ${tableName} WHERE id = ?`;
-            const selectUserValues = [requestBody.id];
-
-            const selectUserResults = await new Promise<any[]>((resolve, reject) => {
-                connection.query(selectUserQuery, selectUserValues, (error, results) => {
-                    if (error) {
-                        console.log("Error in db query", error);
-                        reject(error);
-                    } else {
-                        resolve(results);
-                    }
-                });
-            });
-
-            console.log("selectUserResults", selectUserResults);
+        if (count >= 1) {
             response.statusCode = 200;
             responseBody.message = 'success';
-            responseBody.userInfo = selectUserResults;
+            responseBody.userInfo = results[0];
             response.body = JSON.stringify(responseBody);
-            return response;
         } else {
+            const columns = Object.keys(requestBody).join(', ');
+            const values = Object.values(requestBody).map((value) => `'${value}'`).join(', ');
             const updateTime = new Date().toISOString();
-            const insertQuery = `INSERT INTO ${tableName} (id, updateTime) VALUES (?, ?)`;
-            const insertValues = [requestBody.id, updateTime];
 
+            const insertQuery = `INSERT INTO ${tableName} (${columns}, updateTime) VALUES (${values}, ${updateTime})`;
+            console.log("insertQuery", insertQuery);
             await new Promise<void>((resolve, reject) => {
-                connection.query(insertQuery, insertValues, (error) => {
+                connection.query(insertQuery, values, (error) => {
                     if (error) {
-                        console.log("Error in db query", error);
+                        console.log("Error in db insert", error);
                         reject(error);
                     } else {
                         resolve();
@@ -97,10 +81,11 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
             response.statusCode = 200;
             responseBody.message = 'success';
-            responseBody.userInfo = { id: requestBody.id, updateTime: updateTime };
+            responseBody.userInfo = {...{updateTime: updateTime}, ...requestBody};
             response.body = JSON.stringify(responseBody);
-            return response;
         }
+
+        return response;
     } catch (e) {
         console.log("Error in db connection", e);
         response.statusCode = 400;
