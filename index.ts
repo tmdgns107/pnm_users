@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
 import mysql from 'mysql2/promise';
-// import * as database from "./config/database.json";
 import * as util from "./util";
 
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
@@ -38,10 +37,6 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     let connection;
     try {
         /** MySQL 연결 **/
-        console.log("`${alias.toUpperCase()}_DB_HOST`", process.env[`${alias.toUpperCase()}_DB_HOST`]);
-        console.log("`${alias.toUpperCase()}_DB_USER`", process.env[`${alias.toUpperCase()}_DB_USER`]);
-        console.log("`${alias.toUpperCase()}_DB_PASSWORD`", process.env[`${alias.toUpperCase()}_DB_PASSWORD`]);
-        console.log("`${alias.toUpperCase()}_DB_NAME`", process.env[`${alias.toUpperCase()}_DB_NAME`]);
         connection = await mysql.createConnection({
             host: process.env[`${alias.toUpperCase()}_DB_HOST`],
             user: process.env[`${alias.toUpperCase()}_DB_USER`],
