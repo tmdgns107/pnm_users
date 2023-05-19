@@ -23,10 +23,10 @@ npm install
 
 Set the following environment variables for your Lambda function:
 
-DB_HOST: The host address of the MySQL database
-DB_USER: The username for accessing the MySQL database
-DB_PASSWORD: The password for the MySQL database
-DB_NAME: The name of the MySQL database
+- DB_HOST: The host address of the MySQL database
+- DB_USER: The username for accessing the MySQL database
+- DB_PASSWORD: The password for the MySQL database
+- DB_NAME: The name of the MySQL database
 
 4. Deploy the Lambda function:
 
