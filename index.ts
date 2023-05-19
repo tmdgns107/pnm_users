@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
-import mysql2 from 'mysql2/promise';
+import mysql from 'mysql2/promise';
 import * as database from "./config/database.json";
 import * as util from "./util";
 
@@ -15,7 +15,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
         userInfo: {}
     };
 
-    let tableName :string = 'users_test';
+    let tableName: string = 'users_test';
     if (!event.body) {
         console.log("Not exist body");
         response.statusCode = 400;
@@ -30,7 +30,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
     let connection;
     try {
-        connection = await mysql2.createConnection({
+        connection = await mysql.createConnection({
             host: database.host,
             user: database.user,
             password: database.password,
@@ -38,15 +38,15 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             database: database.database
         });
 
-        const query :string = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
-        const values :any[] = [requestBody.id];
+        const query: string = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
+        const values: any[] = [requestBody.id];
 
         const results = await util.queryMySQL(connection, query, values);
 
         console.log("results", results);
-        const count :number = results[0]?.count || 0;
+        const count: number = results[0]?.count || 0;
 
-        const currentTime :string = new Date().toISOString();
+        const currentTime: string = new Date().toISOString();
         if (count >= 1) {
             const updateQuery: string = `UPDATE ${tableName} SET updateTime = '${currentTime}' WHERE id = ?`;
             await util.queryMySQL(connection, updateQuery, values);
@@ -57,14 +57,13 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             response.body = JSON.stringify(responseBody);
         } else {
             const columns: string = Object.keys(requestBody).join(', ');
-            const values: string = Object.values(requestBody).map((value) :string => `'${value}'`).join(', ');
-
-            const insertQuery :string = `INSERT INTO ${tableName} (${columns}, createTime, updateTime) VALUES (${values}, '${currentTime}', '${currentTime}')`;
-            await util.queryMySQL(connection, insertQuery, values);
+            const valuePlaceholders: string = Object.values(requestBody).map(() => '?').join(', ');
+            const insertQuery: string = `INSERT INTO ${tableName} (${columns}, createTime, updateTime) VALUES (${valuePlaceholders}, '${currentTime}', '${currentTime}')`;
+            await util.queryMySQL(connection, insertQuery, Object.values(requestBody));
 
             response.statusCode = 200;
             responseBody.message = 'success';
-            responseBody.userInfo = {...{updateTime: currentTime, createTime: currentTime}, ...requestBody};
+            responseBody.userInfo = { ...{ updateTime: currentTime, createTime: currentTime }, ...requestBody };
             response.body = JSON.stringify(responseBody);
         }
 
