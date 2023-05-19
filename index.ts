@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Handler } from 'aws-lambda';
-// import mysql from 'mysql';
-import mysql from 'mysql2/promise';
+import mysql2 from 'mysql2/promise';
 import * as database from "./config/database.json";
 import * as util from "./util";
 
@@ -31,15 +30,13 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
 
     let connection;
     try {
-        connection = mysql.createConnection({
+        connection = await mysql2.createConnection({
             host: database.host,
             user: database.user,
             password: database.password,
             port: database.port,
             database: database.database
         });
-
-        connection.connect();
 
         const query :string = `SELECT COUNT(*) AS count FROM ${tableName} WHERE id = ?`;
         const values :any[] = [requestBody.id];
@@ -63,7 +60,6 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
             const values: string = Object.values(requestBody).map((value) :string => `'${value}'`).join(', ');
 
             const insertQuery :string = `INSERT INTO ${tableName} (${columns}, createTime, updateTime) VALUES (${values}, '${currentTime}', '${currentTime}')`;
-
             await util.queryMySQL(connection, insertQuery, values);
 
             response.statusCode = 200;
@@ -76,7 +72,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     } catch (e) {
         console.log("Error in db connection", e);
         response.statusCode = 400;
-        responseBody.message = 'An error occurred while executing query.';
+        responseBody.message = 'An error occurred while executing the query.';
         responseBody.userInfo = {};
         response.body = JSON.stringify(responseBody);
         return response;
