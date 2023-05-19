@@ -38,6 +38,10 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     let connection;
     try {
         /** MySQL 연결 **/
+        console.log("`${alias.toUpperCase()}_DB_HOST`", `${alias.toUpperCase()}_DB_HOST`);
+        console.log("`${alias.toUpperCase()}_DB_USER`", `${alias.toUpperCase()}_DB_USER`);
+        console.log("`${alias.toUpperCase()}_DB_PASSWORD`", `${alias.toUpperCase()}_DB_PASSWORD`);
+        console.log("`${alias.toUpperCase()}_DB_NAME`", `${alias.toUpperCase()}_DB_NAME`);
         connection = await mysql.createConnection({
             host: process.env[`${alias.toUpperCase()}_DB_HOST`],
             user: process.env[`${alias.toUpperCase()}_DB_USER`],
