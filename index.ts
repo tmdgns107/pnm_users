@@ -34,6 +34,18 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     const requestBody = JSON.parse(body);
     console.log("requestBody", requestBody);
 
+    /** 필요한 key 검증 **/
+    let requiredKey: string[] = ['id', 'email', 'accessToken', 'image', 'provider'];
+    for(let key of requiredKey){
+        if(!requestBody.includes(key)){
+            console.log(`Not exist ${key}`);
+            response.statusCode = 400;
+            responseBody.message = `${key} is required.`;
+            response.body = JSON.stringify(responseBody);
+            return response;
+        }
+    }
+
     let connection;
     try {
         /** MySQL 연결 **/
