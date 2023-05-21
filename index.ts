@@ -16,7 +16,8 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
         statusCode: 200,
         body: ''
     };
-    let responseBody = {
+    let responseBody: { message: string; userInfo: object };
+    responseBody = {
         message: '',
         userInfo: {}
     };
