@@ -37,13 +37,13 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     console.log("requestBody", requestBody);
 
     /** 필요한 key 검증 **/
-    let requiredKey: string[] = ['id', 'email', 'accessToken', 'image', 'provider'];
+    // let requiredKey: string[] = ['id', 'email', 'accessToken', 'image', 'provider'];
+    let requiredKey: string[] = ['id', 'email', 'provider'];
     for(let key of requiredKey){
-        if(!requestBody.includes(key)){
+        if (!(key in requestBody)) {
             console.log(`Not exist ${key}`);
             response.statusCode = 400;
-            responseBody.message = `${key} is required.`;
-            response.body = JSON.stringify(responseBody);
+            response.body = JSON.stringify({ message: `${key} is required.` });
             return response;
         }
     }
